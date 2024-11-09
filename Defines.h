@@ -8,7 +8,7 @@
 #define maxLex 100				// Максимальная длина лексемы
 #define maxKeyword 20			// Максимальная длина ключевого слова
 #define maxDecLex 10			// Максимальная длина int 10сс числа
-#define maxHexLex 8			// Максимальная длина 16cc числа
+#define maxHexLex 			// Максимальная длина 16cc числа
 typedef char Type_mod[maxText]; // Хранение текста
 typedef char Type_lex[maxLex];  // Хранение лексем
 

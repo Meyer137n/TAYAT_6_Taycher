@@ -19,9 +19,10 @@ int main()
     type = scaner->UseScaner(lex);
 
     if (type == TEnd)
-        std::cout << "\n\nСинтаксических ошибок не обнаружено" << std::endl;
+        std::cout << "\n\nСинтаксических ошибок не обнаружено\n\n";
     else
-        std::cout << "\n\nERROR" << std::endl;
+        std::cout << "\n\nERROR\n\n";
 
     return 0;
 }
+

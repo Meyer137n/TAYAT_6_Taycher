@@ -1,3 +1,5 @@
-long int amain()
+int main()
 {
+	for(a=5; a<6; a=a+1)
+		;
 }
