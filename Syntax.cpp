@@ -1,24 +1,24 @@
 #include "Syntax.h"
 #include <iostream>
 
-// Конструктор класса Syntax, инициализирующий указатель на объект Scaner
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РєР»Р°СЃСЃР° Syntax, РёРЅРёС†РёР°Р»РёР·РёСЂСѓСЋС‰РёР№ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РѕР±СЉРµРєС‚ Scaner
 Syntax::Syntax(Scaner* scaner)
 {
 	this->scaner = scaner;
 }
 
-// Метод для заглядывания вперед на несколько лексем, не изменяя текущей позиции
+// РњРµС‚РѕРґ РґР»СЏ Р·Р°РіР»СЏРґС‹РІР°РЅРёСЏ РІРїРµСЂРµРґ РЅР° РЅРµСЃРєРѕР»СЊРєРѕ Р»РµРєСЃРµРј, РЅРµ РёР·РјРµРЅСЏСЏ С‚РµРєСѓС‰РµР№ РїРѕР·РёС†РёРё
 int Syntax::look_forward(int pos) {
 	Type_lex lex;
-	int saved_pointer = scaner->GetUK();  // Сохраняем текущую позицию указателя
+	int saved_pointer = scaner->GetUK();  // РЎРѕС…СЂР°РЅСЏРµРј С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ СѓРєР°Р·Р°С‚РµР»СЏ
 	int next_type;
 	for (int i = 0; i < pos; i++)
-		next_type = scaner->UseScaner(lex);  // Сканируем следующую лексему
-	scaner->PutUK(saved_pointer);  // Восстанавливаем исходную позицию указателя
-	return next_type;  // Возвращаем тип лексемы на позиции pos
+		next_type = scaner->UseScaner(lex);  // РЎРєР°РЅРёСЂСѓРµРј СЃР»РµРґСѓСЋС‰СѓСЋ Р»РµРєСЃРµРјСѓ
+	scaner->PutUK(saved_pointer);  // Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј РёСЃС…РѕРґРЅСѓСЋ РїРѕР·РёС†РёСЋ СѓРєР°Р·Р°С‚РµР»СЏ
+	return next_type;  // Р’РѕР·РІСЂР°С‰Р°РµРј С‚РёРї Р»РµРєСЃРµРјС‹ РЅР° РїРѕР·РёС†РёРё pos
 }
 
-// Метод для получения следующей лексемы и продвижения указателя
+// РњРµС‚РѕРґ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ СЃР»РµРґСѓСЋС‰РµР№ Р»РµРєСЃРµРјС‹ Рё РїСЂРѕРґРІРёР¶РµРЅРёСЏ СѓРєР°Р·Р°С‚РµР»СЏ
 int Syntax::scan(Type_lex lex) {
 	int type = scaner->UseScaner(lex);
 	return type;
@@ -29,7 +29,7 @@ void Syntax::program() {
 	Type_lex lex;
 	int type;
 
-	type = look_forward(1); // определение первого символа
+	type = look_forward(1); // РѕРїСЂРµРґРµР»РµРЅРёРµ РїРµСЂРІРѕРіРѕ СЃРёРјРІРѕР»Р°
 
 	if (type != TConst && type != TInt && type != TShort && type != TLong)
 	{
@@ -42,8 +42,8 @@ void Syntax::program() {
 	{
 		{
 			type = look_forward(1);
-			int simbol = look_forward(3); // проверка левой скобки для int,short,long
-			int simbol2 = look_forward(4); // для long long
+			int simbol = look_forward(3); // РїСЂРѕРІРµСЂРєР° Р»РµРІРѕР№ СЃРєРѕР±РєРё РґР»СЏ int,short,long
+			int simbol2 = look_forward(4); // РґР»СЏ long long
 			if (type == TConst)
 			{
 				named_const();
@@ -66,12 +66,12 @@ void Syntax::program() {
 	}
 }
 
-// Метод для обработки именованной константы
+// РњРµС‚РѕРґ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РёРјРµРЅРѕРІР°РЅРЅРѕР№ РєРѕРЅСЃС‚Р°РЅС‚С‹
 void Syntax::named_const() {
 	Type_lex lex;
 	int type;
 
-	type = scan(lex); // Ожидаем ключевое слово const
+	type = scan(lex); // РћР¶РёРґР°РµРј РєР»СЋС‡РµРІРѕРµ СЃР»РѕРІРѕ const
 	if (type != TConst)
 	{
 		scaner->PrintError("\nExpected const got", lex);
@@ -91,7 +91,7 @@ void Syntax::named_const() {
 	} while (type != TSemi);
 }
 
-// Метод для обработки объявления функции
+// РњРµС‚РѕРґ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РѕР±СЉСЏРІР»РµРЅРёСЏ С„СѓРЅРєС†РёРё
 void Syntax::function() {
 	Type_lex lex;
 
@@ -124,13 +124,13 @@ void Syntax::function() {
 		scaner->PrintError("\nExpected } got", lex);
 }
 
-// Описание данных
+// РћРїРёСЃР°РЅРёРµ РґР°РЅРЅС‹С…
 void Syntax::data_description()
 {
 	Type_lex lex;
 	int type;
 
-	type = look_forward(1); // Ожидаем ключевое слово const
+	type = look_forward(1); // РћР¶РёРґР°РµРј РєР»СЋС‡РµРІРѕРµ СЃР»РѕРІРѕ const
 	if (type != TInt && type != TShort && type != TLong)
 	{
 		scaner->PrintError("\nExpected const got", lex);
@@ -138,7 +138,7 @@ void Syntax::data_description()
 	}
 	this->type();
 
-	// Обработка присваивания значения константе
+	// РћР±СЂР°Р±РѕС‚РєР° РїСЂРёСЃРІР°РёРІР°РЅРёСЏ Р·РЅР°С‡РµРЅРёСЏ РєРѕРЅСЃС‚Р°РЅС‚Рµ
 	do {
 		type = look_forward(1);
 		if (type != TId) {
@@ -166,19 +166,19 @@ void Syntax::data_description()
 	} while (type != TSemi);
 }
 
-// Метод для обработки присваивания
+// РњРµС‚РѕРґ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 void Syntax::assignment() {
 	Type_lex lex;
 	int type;
 
-	// Ожидаем имя константы
+	// РћР¶РёРґР°РµРј РёРјСЏ РєРѕРЅСЃС‚Р°РЅС‚С‹
 	type = scan(lex);
 	if (type != TId) {
 		scaner->PrintError("\nExpected identifier got", lex);
 		return;
 	}
 
-	// Ожидаем символ '='
+	// РћР¶РёРґР°РµРј СЃРёРјРІРѕР» '='
 	type = scan(lex);
 	if (type != TAssign)
 	{
@@ -189,27 +189,27 @@ void Syntax::assignment() {
 	expression();
 }
 
-// Метод для проверки типа (int, short, long, long long)
+// РњРµС‚РѕРґ РґР»СЏ РїСЂРѕРІРµСЂРєРё С‚РёРїР° (int, short, long, long long)
 void Syntax::type() {
 	Type_lex lex;
 	int type;
 
 	// int, short, long
 	type = scan(lex);
-	if (type != TInt && type != TShort && (type != TLong || (type != TLong && look_forward(1) != TLong)))
+	if (type != TInt && type != TShort && type != TLong)
 	{
 		scaner->PrintError("\nExpected type got", lex);
 		return;
 	}
 
 	// long long
-	if (type == TLong && look_forward(1) == TLong)
+	if (look_forward(1) == TLong)
 	{
 		scan(lex);
 	}
 }
 
-// Метод для обработки операторов и описаний
+// РњРµС‚РѕРґ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РѕРїРµСЂР°С‚РѕСЂРѕРІ Рё РѕРїРёСЃР°РЅРёР№
 void Syntax::operators_descriptions() {
 	Type_lex lex;
 	int type;
@@ -224,7 +224,7 @@ void Syntax::operators_descriptions() {
 	}
 }
 
-// Оператор For
+// РћРїРµСЂР°С‚РѕСЂ For
 void Syntax::operator_for()
 {
 	Type_lex lex;
@@ -258,7 +258,7 @@ void Syntax::operator_for()
 	operators();
 }
 
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 void Syntax::operators()
 {
 	Type_lex lex;
@@ -266,12 +266,12 @@ void Syntax::operators()
 
 	type = look_forward(1);
 
-	if (type == TRBrace) //без операторов
+	if (type == TRBrace) //Р±РµР· РѕРїРµСЂР°С‚РѕСЂРѕРІ
 	{
 		return;
 	}
 
-	if (type == TReturn) // Оператор for
+	if (type == TReturn) // РћРїРµСЂР°С‚РѕСЂ for
 	{
 		type = scan(lex);
 		expression();
@@ -283,32 +283,32 @@ void Syntax::operators()
 		return;
 	}
 
-	if (type == TSemi) // пустой оператор
+	if (type == TSemi) // РїСѓСЃС‚РѕР№ РѕРїРµСЂР°С‚РѕСЂ
 	{
 		type = scan(lex);
 		return;
 	}
 
-	if (type == TLBrace) // составной оператор
+	if (type == TLBrace) // СЃРѕСЃС‚Р°РІРЅРѕР№ РѕРїРµСЂР°С‚РѕСЂ
 	{
 		composite_operator();
 		return;
 	}
 
-	if (type == TFor) // оператор for
+	if (type == TFor) // РѕРїРµСЂР°С‚РѕСЂ for
 	{
 		operator_for();
 		return;
 	}
 
 	int type2 = look_forward(2);
-	if (type == TId && type2 == TLBracket) // вызов функции
+	if (type == TId && type2 == TLBracket) // РІС‹Р·РѕРІ С„СѓРЅРєС†РёРё
 	{
 		func_call();
 		return;
 	}
 
-	if (type == TId && type2 == TAssign) // присваивание
+	if (type == TId && type2 == TAssign) // РїСЂРёСЃРІР°РёРІР°РЅРёРµ
 	{
 		assignment();
 		type = scan(lex);
@@ -320,7 +320,7 @@ void Syntax::operators()
 	scaner->PrintError("\nExpected operator got", lex);
 }
 
-// Составной оператор
+// РЎРѕСЃС‚Р°РІРЅРѕР№ РѕРїРµСЂР°С‚РѕСЂ
 void Syntax::composite_operator()
 {
 	Type_lex lex;
@@ -341,7 +341,7 @@ void Syntax::composite_operator()
 
 }
 
-// Вызов функции
+// Р’С‹Р·РѕРІ С„СѓРЅРєС†РёРё
 void Syntax::func_call()
 {
 	Type_lex lex;
@@ -364,7 +364,7 @@ void Syntax::func_call()
 		scaner->PrintError("Expected ; got", lex);
 }
 
-// Метод для обработки выражений
+// РњРµС‚РѕРґ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РІС‹СЂР°Р¶РµРЅРёР№
 void Syntax::expression() {
 	Type_lex lex;
 	int type;
@@ -378,7 +378,7 @@ void Syntax::expression() {
 	}
 }
 
-// Метод для обработки сравнений
+// РњРµС‚РѕРґ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё СЃСЂР°РІРЅРµРЅРёР№
 void Syntax::comparison() {
 	Type_lex lex;
 	int type;
@@ -391,7 +391,7 @@ void Syntax::comparison() {
 	}
 }
 
-// Метод для обработки сложения и вычитания
+// РњРµС‚РѕРґ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё СЃР»РѕР¶РµРЅРёСЏ Рё РІС‹С‡РёС‚Р°РЅРёСЏ
 void Syntax::addendum() {
 	Type_lex lex;
 	int type;
@@ -406,7 +406,7 @@ void Syntax::addendum() {
 	}
 }
 
-// Метод для обработки умножения и деления
+// РњРµС‚РѕРґ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё СѓРјРЅРѕР¶РµРЅРёСЏ Рё РґРµР»РµРЅРёСЏ
 void Syntax::multiplier() {
 	Type_lex lex;
 	int type;
@@ -421,7 +421,7 @@ void Syntax::multiplier() {
 	}
 }
 
-// Метод для обработки унарных операций
+// РњРµС‚РѕРґ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё СѓРЅР°СЂРЅС‹С… РѕРїРµСЂР°С†РёР№
 void Syntax::unary_operation() {
 	Type_lex lex;
 	int type = look_forward(1);
@@ -435,7 +435,7 @@ void Syntax::unary_operation() {
 	}
 }
 
-// Метод для обработки простых выражений
+// РњРµС‚РѕРґ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РїСЂРѕСЃС‚С‹С… РІС‹СЂР°Р¶РµРЅРёР№
 void Syntax::elementary_expression() {
 	Type_lex lex;
 	int type = look_forward(1);
