@@ -6,64 +6,65 @@
 
 #define maxText 100000			// Максимальная длина текста
 #define maxLex 100				// Максимальная длина лексемы
-#define maxKeyword 20			// Максимальная длина ключевого слова
-#define maxDecLex 10			// Максимальная длина int 10сс числа
-#define maxHexLex 			// Максимальная длина 16cc числа
-typedef char Type_mod[maxText]; // Хранение текста
-typedef char Type_lex[maxLex];  // Хранение лексем
+#define maxKeyword 16			// Максимальное количество ключевых слов
+#define maxNumber 10			// Максимальная длина числа
+#define maxHexNumber 10			// Максимальная длина 16сс числа
+typedef char type_mod[maxText]; // Текст
+typedef char type_lex[maxLex];  // Лексема
+
 
 /**
 * Ключевые слова
 */
-#define TInt 1
-#define TShort 2
-#define TLong 3
-#define TFor 4
-#define TReturn 5
-#define TMain 6
-#define TConst 7
+#define typeInt 1
+#define typeShort 2
+#define typeLong 3
+#define typeFor 4
+#define typeReturn 5
+#define typeMain 6
+#define typeConst 7
 
 /**
 * Тип лексем
 */
-#define TId 20
+#define typeId 20
 
 /**
 * Константы
 */
-#define TConstInt 30
-#define TConstHex 31
-#define TCLongInt 32
-#define TCLongHex 33
+#define typeConstInt 30
+#define typeConstLongInt 31
+#define typeConstHex 32
+#define typeConstLongHex 33
 
 /**
 * Знаки операций
 */
-#define TPlus 40			// +
-#define TMinus 41			// -
-#define TMul 42				// *
-#define TDiv 43				// /
-#define TMod 44				// %
-#define TEq 45				// ==
-#define TNotEq 46			// !=
-#define TLess 47			// <
-#define TLessEq 48			// <=
-#define TGreater 49			// >
-#define TGreaterEq 50		// >=
-#define TAssign 51			// =
+#define typePlus 40			    // +
+#define typeMinus 41			// -
+#define typeMul 42				// *
+#define typeDiv 43				// /
+#define typeMod 44				// %
+#define typeEq 45				// ==
+#define typeUnEq 46				// !=
+#define typeLess 47				// <
+#define typeLessOrEq 48			// <=
+#define typeMore 49				// >
+#define typeMoreOrEq 50			// >=
+#define typeEval 51				// =
 
 /**
 * Специальные знаки
 */
-#define TSemi 60		// ;
-#define TComma 61		// ,
-#define TLBracket 62	// (
-#define TRBracket 63	// )
-#define TLBrace 64		// {
-#define TRBrace 65		// }
+#define typeSemicolon 60		// ;
+#define typeComma 61			// ,
+#define typeLeftBracket 62		// (
+#define typeRightBracket 63		// )
+#define typeLeftBrace 64		// {
+#define typeRightBrace 65		// }
 
 /**
 * Дополнительно
 */
-#define TEnd 100
-#define TError 200
+#define typeEnd 100
+#define typeError 404

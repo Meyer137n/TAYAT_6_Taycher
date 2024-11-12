@@ -1,5 +1,5 @@
 ﻿#include "Scaner.h"
-#include "Syntax.h"
+#include "Diagram.h"
 #include <iostream>
 #include <iomanip>
 #include <windows.h>
@@ -7,22 +7,21 @@
 
 int main()
 {
-    setlocale(LC_ALL, "rus");
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
     Scaner* scaner;
     scaner = new Scaner("input.txt");
-    Syntax* syntax = new Syntax(scaner);
+    Diagram* diagram = new Diagram(scaner);
 
-    syntax->program();
+    diagram->Program();
 
-    int type; 
-    Type_lex lex;
+    int type; type_lex lex;
     type = scaner->UseScaner(lex);
 
-    if (type == TEnd)
-        std::cout << "\n\nСинтаксических ошибок не обнаружено\n\n";
+    if (type == typeEnd)
+        std::cout << "\n\nОшибок не обнаружено\n\n";
     else
-        std::cout << "\n\nERROR\n\n";
+        std::cout << "\n\nError\n\n";
 
     return 0;
 }
-

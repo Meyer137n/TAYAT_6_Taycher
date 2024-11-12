@@ -1,338 +1,330 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #include "Scaner.h"
-#include <fstream>
-#include <sstream>
-#include <iostream>
 
-Type_lex keyword[maxKeyword] =
+/**
+* Список допустимых ключевых слов в программе
+*/
+type_lex keyword[maxKeyword] =
 {
-	"int", "short", "long", "for", "main", "return", "const"
+    "int", "short", "long", "main", "return", "for", "const"
 };
 
+/**
+* Список идентификаторов, которые соответствуют допустимым ключевым словам в программе
+*/
 int indexKeyword[maxKeyword] =
 {
-	TInt, TShort, TLong, TFor, TMain, TReturn, TConst
+    typeInt, typeShort, typeLong, typeMain, typeReturn, typeFor, typeConst
 };
 
-void Scaner::PutUK(int uk)
+//Ошибка если файл пустой
+void Scaner::PutUK(size_t uk) 
 {
-	if (uk >= 0 && uk <= maxText)
-		this->uk = uk;
+    if (uk < text.size()) 
+    {
+        this->uk = uk;
+    }
+    else if(text.size() != 0)
+    {
+        std::cerr << "Ошибка: индекс выходит за пределы размера текста." << std::endl;
+        exit(1);
+    }
 }
 
-int Scaner::GetUK()
+size_t Scaner::GetUK()
 {
-	return uk;
+    return uk;
 }
 
-void Scaner::PrintError(const char* error, const char* text)
+void Scaner::GetData(const std::string& filename)
 {
-	if (text[0] == '\0')
-		std::cout << error << std::endl;
-	else
-		std::cout << error << " " << text << std::endl;
+    std::ifstream file(filename);
+    if (file.is_open())
+    {
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        text = buffer.str(); // Сохраняем текст из файла
+        text += '\n';
+
+        // Определяем позиции перевода строки
+        for (size_t i = 0; i < text.size(); ++i) {
+            if (text[i] == '\n') {
+                lineBreakPositions.push_back(i);
+            }
+        }
+
+        std::cout << "Текст программы:" << std::endl << text << std::endl;
+        std::cout << std::endl << "Результат работы сканера:" << std::endl;
+    }
+    else
+    {
+        PrintError("Ошибка открытия файла.", filename);
+    }
 }
 
-int Scaner::UseScaner(Type_lex lex)
+void Scaner::PrintError(const std::string& error, const std::string& lexeme)
 {
-	int i = 0;
-	lex[0] = '\0';
-start:
-	while (text[uk] == ' ' || text[uk] == '\t' || text[uk] == '\n')
-		uk++;
-	i = 0;
+    int line = 1;
+    int pos = uk;
 
-	// Конец программы
-	if (text[uk] == '\0')
-	{
-		lex[i++] = '#';
-		lex[i] = '\0';
-		return TEnd;
-	}
+    for (size_t i = 0; i < lineBreakPositions.size(); ++i) {
+        if (lineBreakPositions[i] < uk) {
+            line++;
+        }
+        else {
+            pos = uk - (i == 0 ? 0 : lineBreakPositions[i - 1] + 1);
+            break;
+        }
+    }
 
-	// Однострочные и многострочные комментарии
-	if (text[uk] == '/')
-	{
-		uk++;
-		if (text[uk] == '/')
-		{
-			std::cout << "Обнаружен однострочный комментарий" << std::endl;
-			uk++;
-			while (text[uk] != '\n' && text[uk] != '\0')
-				uk++;
-			goto start;
-		}
-		else
-		{
-			// Деление
-			uk++;
-			lex[i++] = '/';
-			lex[i++] = '\0';
-			return TDiv;
-		}
-	}
+    std::cout << "Ошибка: " << error << " на строке " << line << ", позиция " << pos;
+    if (!lexeme.empty())
+    {
+        std::cout << ", найдено: " << lexeme;
+    }
+    std::cout << std::endl;
 
-	// Обработка шестнадцатеричных констант и чисел, начинающихся с 0
-	if (text[uk] == '0') {
-		i = 0;
-		lex[i++] = text[uk++];
-
-
-		// Проверка на шестнадцатеричную константу
-		if (text[uk] == 'x') {
-			lex[i++] = text[uk++];
-
-			// Считываем шестнадцатеричные цифры
-			while (isdigit(text[uk]) || (text[uk] >= 'a' && text[uk] <= 'f') || (text[uk] >= 'A' && text[uk] <= 'F'))
-			{
-				lex[i++] = text[uk++];
-			}
-
-			if (text[uk] == 'L')
-			{
-				lex[i] = text[uk];  // Добавляем 'L' к lex
-			}
-
-			// Проверка на суффикс L для длинной десятичной константы
-			if (text[uk] == 'L')
-			{
-				uk++;
-				i++;
-				// Проверка на максимальную длину для длинной шестнадцатеричной константы (8 символов)
-				if (i > maxHexLex + 3) {
-					lex[i] = '\0';
-					PrintError("Длинная шестнадцатеричная константа превышает допустимую длину", lex);
-					return TError;
-				}
-				lex[i] = '\0';
-				return TCLongHex;
-			}
-
-			// Проверка на превышение длины обычной шестнадцатеричной константы
-			if (i > maxHexLex + 2)
-			{
-				lex[i] = '\0';
-				PrintError("Шестнадцатеричная константа превышает допустимую длину", lex);
-				return TError;
-			}
-
-			lex[i] = '\0';
-			return TConstHex;  // Обычная шестнадцатеричная константа
-		}
-
-		// Обработка десятичных чисел, начинающихся с 0 (например, "0123")
-		while (isdigit(text[uk])) // maxDecLex - максимальная длина для обычных чисел
-		{
-			lex[i++] = text[uk++];
-		}
-
-		if (text[uk] == 'L')
-		{
-			lex[i] = text[uk];  // Добавляем 'L' к lex
-		}
-
-		// Проверка на суффикс L для длинной десятичной константы
-		if (text[uk] == 'L')
-		{
-			uk++;
-			i++;
-			// Проверка на максимальную длину для длинной десятичной константы (10 символов)
-			if (i > maxDecLex + 1) {
-				lex[i] = '\0';
-				PrintError("Длинная десятичная константа превышает допустимую длину", lex);
-				return TError;
-			}
-			lex[i] = '\0';
-			return TCLongInt;
-		}
-
-		// Проверка на превышение длины обычной константы
-		if (i > maxDecLex)
-		{
-			lex[i] = '\0';
-			PrintError("Десятичная константа превышает допустимую длину", lex);
-			return TError;
-		}
-		lex[i] = '\0';
-		return TConstInt;  // Обычное десятичное число, начинающееся с 0 (например, "0123")
-	}
-
-	// Обработка десятичных констант, начинающихся с 1...9
-	if (text[uk] >= '1' && text[uk] <= '9')
-	{
-		i = 0;
-
-		// Считываем десятичные цифры
-		while (isdigit(text[uk])) // maxDecLex - максимальная длина для обычных чисел
-		{
-			lex[i++] = text[uk++];
-		}
-
-		if (text[uk] == 'L')
-		{
-			lex[i] = text[uk];  // Добавляем 'L' к lex
-		}
-
-		// Проверка на суффикс L для длинной десятичной константы
-		if (text[uk] == 'L')
-		{
-			uk++;
-			i++;
-			// Проверка на максимальную длину для длинной десятичной константы (10 символов)
-			if (i > maxDecLex + 1) {
-				lex[i] = '\0';
-				PrintError("Длинная десятичная константа превышает допустимую длину", lex);
-				return TError;
-			}
-			lex[i] = '\0';
-			return TCLongInt;
-		}
-
-		// Проверка на превышение длины обычной константы
-		if (i > maxDecLex)
-		{
-			lex[i] = '\0';
-			PrintError("Десятичная константа превышает допустимую длину", lex);
-			return TError;
-		}
-
-		lex[i] = '\0';
-		return TConstInt;  // Обычная десятичная константа
-	}
-
-	// Идентификаторы
-	if (isalpha(text[uk]) || text[uk] == '_')
-	{
-		while ((isalnum(text[uk]) || text[uk] == '_') && i < maxLex - 1)
-		{ // Добавлена проверка длины
-			lex[i++] = text[uk++];
-		}
-		lex[i] = '\0';
-		if (i == maxLex - 1 && (isalnum(text[uk]) || text[uk] == '_'))
-		{
-			while (isalnum(text[uk]) || text[uk] == '_')
-				uk++;
-			PrintError("Идентификатор превышает максимальную длину лексемы", lex);
-			return TError;
-		}
-		for (int j = 0; j < maxKeyword; j++)
-		{
-			if (strcmp(lex, keyword[j]) == 0)
-			{
-				return indexKeyword[j];
-			}
-		}
-		return TId;
-	}
-
-	// Знаки операций
-	switch (text[uk])
-	{
-	case ';': uk++; lex[i++] = ';'; lex[i] = '\0'; return TSemi;
-	case ',': uk++; lex[i++] = ','; lex[i] = '\0'; return TComma;
-	case '(': uk++; lex[i++] = '('; lex[i] = '\0'; return TLBracket;
-	case ')': uk++; lex[i++] = ')'; lex[i] = '\0'; return TRBracket;
-	case '{': uk++; lex[i++] = '{'; lex[i] = '\0'; return TLBrace;
-	case '}': uk++; lex[i++] = '}'; lex[i] = '\0'; return TRBrace;
-	case '+': uk++; lex[i++] = '+'; lex[i] = '\0'; return TPlus;
-	case '-': uk++; lex[i++] = '-'; lex[i] = '\0'; return TMinus;
-	case '*': uk++; lex[i++] = '*'; lex[i] = '\0'; return TMul;
-	case '/': uk++; lex[i++] = '/'; lex[i] = '\0'; return TDiv;
-	case '%': uk++; lex[i++] = '%'; lex[i] = '\0'; return TMod;
-	case '=':
-		uk++;
-		lex[i++] = '=';
-		if (text[uk] == '=')
-		{
-			uk++;
-			lex[i++] = '=';
-			lex[i] = '\0';
-			return TEq;
-		}
-		else
-		{
-			lex[i] = '\0';
-			return TAssign;
-		}
-	case '!':
-		uk++;
-		lex[i++] = '!';
-		if (text[uk] == '=')
-		{
-			uk++;
-			lex[i++] = '=';
-			lex[i] = '\0';
-			return TNotEq;
-		}
-		else
-		{
-			lex[i] = '\0';
-			PrintError("Неожиданный токен", lex);
-			return TError;
-		}
-	case '>':
-		uk++;
-		lex[i++] = '>';
-		if (text[uk] == '=')
-		{
-			uk++;
-			lex[i++] = '=';
-			lex[i] = '\0';
-			return TGreaterEq;
-		}
-		else
-		{
-			lex[i] = '\0';
-			return TGreater;
-		}
-	case '<':
-		uk++;
-		lex[i++] = '<';
-		if (text[uk] == '=')
-		{
-			uk++;
-			lex[i++] = '=';
-			lex[i] = '\0';
-			return TLessEq;
-		}
-		else
-		{
-			lex[i] = '\0';
-			return TLess;
-		}
-	default:
-		lex[i++] = text[uk];
-		lex[i] = '\0';
-		PrintError("Лексическая ошибка в", lex);
-		uk++;
-		return TError;
-	}
 }
 
-void Scaner::GetData(const char* filename)
+int Scaner::UseScaner(type_lex lex)
 {
-	std::ifstream file(filename);
-	if (file.is_open())
-	{
-		std::stringstream buffer;
-		buffer << file.rdbuf();
+    int i = 0;
+    lex[0] = '\0';
 
-		strncpy(text, buffer.str().c_str(), maxText - 1);
-		text[maxText - 1] = '\0';
+    while (true)
+    {
+        // Пропускаем пробелы
+        while (uk < text.size() && (text[uk] == ' ' || text[uk] == '\t' || text[uk] == '\n'))
+        {
+            uk++;
+        }
 
-		std::cout << text << std::endl;
-		std::cout << "\n........................................................................................................................\n\n";
-	}
-	else
-	{
-		PrintError("Ошибка открытия файла!", filename);
-		return;
-	}
+        // Конец программы 
+        if (uk >= text.size())
+        {
+            lex[i] = '\0';
+            return typeEnd;
+        }
+
+        // Обработка комментариев
+        if (text[uk] == '/')
+        {
+            uk++;
+            if (uk < text.size() && text[uk] == '/')
+            {
+                while (uk < text.size() && text[uk] != '\n')
+                {
+                    uk++;
+                }
+                continue;
+            }
+            else
+            {
+                // Деление
+                lex[i++] = '/';
+                lex[i++] = '\0';
+                return typeDiv;
+            }
+        }
+
+        // Обработка чисел
+        if (isdigit(text[uk]))
+        {
+            if (text[uk] == '0')
+            {
+                lex[i++] = text[uk++];
+
+                if (text[uk] == 'x')
+                {
+                    lex[i++] = text[uk++];
+                    while (uk < text.size() && (isdigit(text[uk]) || (text[uk]>= 'A' && text[uk] <= 'F') || (text[uk] >= 'a' && text[uk] <= 'f')) && i < maxHexNumber - 1)
+                    {
+                        lex[i++] = text[uk++];
+                    }
+                    
+                    if (i == maxHexNumber - 1 && uk < text.size() && ( isdigit(text[uk]) || (text[uk] >= 'A' && text[uk] <= 'F') || (text[uk] >= 'a' && text[uk] <= 'f')))
+                    {
+                        while (uk < text.size() && (isdigit(text[uk]) || (text[uk] >= 'A' && text[uk] <= 'F') || (text[uk] >= 'a' && text[uk] <= 'f')))
+                        {
+                            lex[i++] = text[uk++];
+                        }
+                        if (uk < text.size() && text[uk] == 'L')
+                        {
+                            lex[i++] = text[uk++];
+                        }
+                        lex[i] = '\0';
+                        PrintError("Константа превышает максимальную длину лексемы, максимум 7 цифр: ", lex);
+                        return typeError;
+                    }
+
+                    if (uk < text.size() && text[uk] == 'L')
+                    {
+                        lex[i++] = text[uk++];
+                        lex[i] = '\0';
+                        return typeConstLongHex;
+                    }
+
+                    lex[i] = '\0';
+                    return typeConstHex;
+                }
+            }
+
+            while (uk < text.size() && isdigit(text[uk]) && i < maxNumber - 1)
+            {
+                lex[i++] = text[uk++];
+            }
+
+            if (i == maxNumber - 1 && uk < text.size() && isdigit(text[uk]))
+            {
+                while (uk < text.size() && isdigit(text[uk]))
+                {
+                    lex[i++] = text[uk++];
+                }
+                if (uk < text.size() && text[uk] == 'L')
+                {
+                    lex[i++] = text[uk++];
+                }
+                lex[i] = '\0';
+                PrintError("Константа превышает максимальную длину лексемы: ", lex);
+                return typeError;
+            }
+
+            if (uk < text.size() && text[uk] == 'L')
+            {
+                lex[i++] = text[uk++];
+                lex[i] = '\0';
+                return typeConstLongInt;
+            }
+
+            lex[i] = '\0';
+            return typeConstInt;
+        }
+
+
+        // Обработка идентификаторов
+        if (isalpha(text[uk]) || text[uk] == '_')
+        {
+            while (uk < text.size() && (isalnum(text[uk]) || text[uk] == '_') && i < maxLex - 1)
+            {
+                lex[i++] = text[uk++];
+            }
+            lex[i] = '\0';
+
+            if (i == maxLex - 1 && (uk < text.size() && (isalnum(text[uk]) || text[uk] == '_')))
+            {
+                while (uk < text.size() && (isalnum(text[uk]) || text[uk] == '_'))
+                {
+                    uk++;
+                }
+                PrintError("Идентификатор превышает максимальную длину лексемы.", lex);
+                return typeError;
+            }
+
+            // Проверяем, является ли идентификатор ключевым словом
+            for (int j = 0; j < maxKeyword; j++)
+            {
+                if (strcmp(lex, keyword[j]) == 0)
+                {
+                    return indexKeyword[j];
+                }
+            }
+            return typeId;
+        }
+
+        // Обработка специальных символов
+        switch (text[uk])
+        {
+        case ',':
+            uk++; lex[i++] = ','; lex[i] = '\0'; return typeComma;
+        case ';':
+            uk++; lex[i++] = ';'; lex[i] = '\0'; return typeSemicolon;
+        case '(':
+            uk++; lex[i++] = '('; lex[i] = '\0'; return typeLeftBracket;
+        case ')':
+            uk++; lex[i++] = ')'; lex[i] = '\0'; return typeRightBracket;
+        case '{':
+            uk++; lex[i++] = '{'; lex[i] = '\0'; return typeLeftBrace;
+        case '}':
+            uk++; lex[i++] = '}'; lex[i] = '\0'; return typeRightBrace;
+        case '+':
+            uk++; lex[i++] = '+'; lex[i] = '\0'; return typePlus;
+        case '-':
+            uk++; lex[i++] = '-'; lex[i] = '\0'; return typeMinus;
+        case '*':
+            uk++; lex[i++] = '*'; lex[i] = '\0'; return typeMul;
+        case '%':
+            uk++; lex[i++] = '%'; lex[i] = '\0'; return typeMod;
+        case '=':
+            uk++;
+            lex[i++] = '=';
+            if (uk < text.size() && text[uk] == '=')
+            {
+                uk++;
+                lex[i++] = '=';
+                lex[i] = '\0';
+                return typeEq;
+            }
+            else
+            {
+                lex[i] = '\0';
+                return typeEval;
+            }
+        case '!':
+            uk++;
+            lex[i++] = '!';
+            if (uk < text.size() && text[uk] == '=')
+            {
+                uk++;
+                lex[i++] = '=';
+                lex[i] = '\0';
+                return typeUnEq;
+            }
+            else
+            {
+                lex[i] = '\0';
+                PrintError("Неожидаемый символ: ", lex);
+                return typeError;
+            }
+        case '>':
+            uk++;
+            lex[i++] = '>';
+            if (uk < text.size() && text[uk] == '=')
+            {
+                uk++;
+                lex[i++] = '=';
+                lex[i] = '\0';
+                return typeMoreOrEq;
+            }
+            else
+            {
+                lex[i] = '\0';
+                return typeMore;
+            }
+        case '<':
+            uk++;
+            lex[i++] = '<';
+            if (uk < text.size() && text[uk] == '=')
+            {
+                uk++;
+                lex[i++] = '=';
+                lex[i] = '\0';
+                return typeLessOrEq;
+            }
+            else
+            {
+                lex[i] = '\0';
+                return typeLess;
+            }
+        default:
+            lex[i++] = text[uk++];
+            lex[i] = '\0';
+            PrintError("Лексическая ошибка в строке ", lex);
+            return typeError;
+        }
+    }
 }
 
-Scaner::Scaner(const char* filename)
+Scaner::Scaner(const std::string& filename)
 {
-	GetData(filename);
-	PutUK(0);
+    GetData(filename);
+    PutUK(0);
 }

@@ -127,13 +127,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Syntax.cpp" />
+    <ClCompile Include="Diagram.cpp" />
     <ClCompile Include="Scaner.cpp" />
     <ClCompile Include="TAYAT4.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Defines.h" />
-    <ClInclude Include="Syntax.h" />
+    <ClInclude Include="Diagram.h" />
     <ClInclude Include="Scaner.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

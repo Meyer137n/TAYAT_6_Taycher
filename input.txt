@@ -1,5 +1,32 @@
+const long a = 0x1234ABCD, b = 1234567891111L;
+const long t = 12;
+long long e1, e2, e3 = 77;
+
 int main()
 {
-	for(a=5; a<6; a=a+1)
-		;
+	long long a = 12;
+	int b1 = 66, key, key1;
+	int key, b1 = 66, key1;
+	int b2 = 61;
+	int f = -(b2 * b1);
+	short int c; // Комментарий
+	function();
+	b1 + b2;
+	b1 - 3;
+	b1 = b2;
+	for(a = 0; i < 10; a = a + 1)
+	{
+		a = a + 1;
+		a = a + 2;
+	}
+	;;;;;
+	{{{}}}
+	long long a = 12;
+	return 0;
+}
+
+long long function()
+{
+	int a = 7;
+	return 1 + 7;
 }
